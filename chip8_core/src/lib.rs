@@ -82,4 +82,41 @@ impl Emu {
         self.sp -= 1;
         self.stack[self.sp as usize]
     }
+
+    pub fn tick_timers(&mut self) {
+        if self.dt > 0 {
+            self.dt -= 1;
+        }
+
+        if self.st > 0 {
+            if self.st == 1 {
+                // beep here
+            }
+            self.st -= 1;
+        }
+    }
+
+    pub fn tick(&mut self) {
+        let op = self.fetch();
+        self.execute(op);
+    }
+
+    fn fetch(&mut self) -> u16 {
+        let msb = self.ram[self.pc as usize] as u16;
+        let lsb = self.ram[(self.pc + 1) as usize] as u16;
+        let op = (msb << 8) | lsb;
+        self.pc += 2;
+        op
+    }
+
+    fn execute(&mut self, op: u16) {
+        let h1 = (op & 0xf000) >> 12;
+        let h2 = (op & 0x0f00) >> 8;
+        let h3 = (op & 0x00f0) >> 4;
+        let h4 = op & 0x000f;
+
+        match (h1, h2, h3, h4) {
+            _ => unimplemented!(),
+        }
+    }
 }
