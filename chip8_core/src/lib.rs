@@ -116,7 +116,45 @@ impl Emu {
         let h4 = op & 0x000f;
 
         match (h1, h2, h3, h4) {
-            _ => unimplemented!(),
+            // nop
+            (0, 0, 0, 0) => return,
+            // clear screen
+            (0, 0, 0xe, 0) => {
+                self.screen = [false; SCREEN_WIDTH * SCREEN_HEIGHT];
+            },
+            // return from subroutine
+            (0, 0, 0xe, 0xe) => {
+                let ret_addr = self.pop();
+                self.pc = ret_addr;
+            },
+            // jump
+            (1, _, _, _) => {
+                let nnn = op & 0xfff;
+                self.pc = nnn;
+            },
+            // call subroutine
+            (2, _, _, _) => {
+                self.push(self.pc);
+                let nnn = op & 0xfff;
+                self.pc = nnn;
+            },
+            // skip next instruction if vx == nn
+            (3, _, _, _) => {
+                let x = h2 as usize;
+                let nn = (op & 0xff) as u8;
+                if self.v_reg[x] == nn {
+                    self.pc += 2;
+                }
+            },
+            // skip next if vx != vy
+            (4, _, _, _) => {
+                let x = h2 as usize;
+                let nn = (op & 0xff) as u8;
+                if self.v_reg[x] != nn {
+                    self.pc += 2;
+                }
+            }
+            _ => unimplemented!("unimplemented opcode: {}", op),
         }
     }
 }
