@@ -146,11 +146,19 @@ impl Emu {
                     self.pc += 2;
                 }
             },
-            // skip next if vx != vy
+            // skip next instruction if vx != vy
             (4, _, _, _) => {
                 let x = h2 as usize;
                 let nn = (op & 0xff) as u8;
                 if self.v_reg[x] != nn {
+                    self.pc += 2;
+                }
+            },
+            // 5XY0; skip next instruction if vx == vy
+            (5, _, _, 0) => {
+                let x = h2 as usize;
+                let y = h3 as usize;
+                if self.v_reg[x] == self.v_reg[y] {
                     self.pc += 2;
                 }
             }
